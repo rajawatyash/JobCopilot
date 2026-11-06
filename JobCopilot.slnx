@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JobCopilot.Api/JobCopilot.Api.csproj" />
+    <Project Path="src/JobCopilot.Core/JobCopilot.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/JobCopilot.Tests/JobCopilot.Tests.csproj" />
+  </Folder>
+</Solution>

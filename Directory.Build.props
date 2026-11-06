@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- Shared build settings, so every project (and any new one) gets them.
+       Warnings as errors is a project rule: a warning that is allowed to pile
+       up in CI output is a warning nobody reads. -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

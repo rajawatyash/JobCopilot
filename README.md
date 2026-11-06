@@ -14,7 +14,7 @@ POST /api/match
       │                │
       │                ▼ matched / missing skills
       └──────► ILlmAssessor          (chosen by Llm:Provider)
-                 ├─ AnthropicAssessor  Claude API, forced tool call → typed JSON
+                 ├─ AnthropicAssessor  Claude API, structured outputs → typed JSON
                  └─ OllamaAssessor     local model, JSON-schema "format" → typed JSON
                        │
                        ▼
@@ -22,8 +22,8 @@ POST /api/match
 ```
 
 - **Keyword scan first.** A cheap regex scan against a skill catalog (`SkillCatalog.cs`) with aliases (for example, `k8s` and `AKS` count as Kubernetes). It handles symbol terms like `C#` and `.NET`, where `\b` word boundaries don't work.
-- **Structured LLM output.** The Claude call uses `tool_choice` to force a `record_assessment` tool call, so the answer always comes back as JSON matching a schema rather than free text.
-- **Swappable models.** Both providers share one prompt and one JSON schema (`AssessmentSchema.cs`). Claude gets the schema as a tool's `input_schema`; Ollama gets it as `format`, which constrains decoding to that shape. The response includes `aiModel` (e.g. `ollama:qwen2.5:7b`), so you can compare models on the same JD.
+- **Structured LLM output.** The Claude call sets `output_config.format` to a JSON schema, so the answer comes back as JSON matching that schema rather than free text. It originally forced a `record_assessment` tool call instead; current models reject a forced `tool_choice` with a 400, and structured outputs are the supported way to get JSON back. The parser still treats `stop_reason` of `refusal` or `max_tokens` as a failure, because a schema only holds for an answer the model finished.
+- **Swappable models.** Both providers share one prompt and one JSON schema (`AssessmentSchema.cs`). Claude gets it as `output_config.format`, Ollama as `format`; both constrain decoding to that shape. Claude's structured outputs reject numeric constraints, so `score` carries its 0–100 range in the description and the parser clamps it. The response includes `aiModel` (e.g. `ollama:qwen2.5:7b`), so you can compare models on the same JD.
 - **Graceful degradation.** With no API key, or if the API call fails, you still get the keyword result plus an `aiError` explaining why.
 - **Grounded prompt.** The system prompt tells the model to judge only on CV evidence and never invent experience.
 
@@ -32,7 +32,7 @@ POST /api/match
 Prerequisite: the .NET 10 SDK.
 
 ```bash
-dotnet test                                   # 16 tests, no API key or Ollama needed
+dotnet test                                   # 19 tests, no API key or Ollama needed
 
 cd src/JobCopilot.Api
 dotnet user-secrets init
@@ -75,7 +75,7 @@ tests/JobCopilot.Tests  xUnit: matcher unit tests, response parsing, API tests v
 
 ## What I learned / talking points
 
-- Why to force tool use instead of asking for "JSON please", and how to validate and clamp model output.
+- Why to constrain output with a schema instead of asking for "JSON please", how to validate and clamp what comes back, and what to do when a provider retires the mechanism you built on (forced tool use → structured outputs).
 - Why a deterministic check runs before the LLM (cost, latency, explainability, a fallback).
 - Provider abstraction: frontier vs local models, and the trade-offs between them (privacy, cost, latency, quality). Structured output works differently per provider (tool use vs constrained decoding).
 - How to test code that calls an LLM: a fake `ILlmAssessor` in API tests, and real response fixtures in parser tests.

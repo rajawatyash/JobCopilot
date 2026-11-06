@@ -5,8 +5,11 @@ using JobCopilot.Core.Models;
 namespace JobCopilot.Core.Llm;
 
 /// <summary>
-/// The JSON shape every provider must return. Claude gets it as a tool's
-/// input_schema; Ollama gets it as the structured-output "format".
+/// The JSON shape every provider must return. Claude gets it as
+/// output_config.format; Ollama gets it as the structured-output "format".
+/// Claude's structured outputs reject numeric constraints (minimum/maximum) and
+/// require additionalProperties: false, so the score range is documented in the
+/// description and enforced by <see cref="Parse"/> instead.
 /// </summary>
 internal static class AssessmentSchema
 {
@@ -16,13 +19,14 @@ internal static class AssessmentSchema
     {
       "type": "object",
       "properties": {
-        "score":            { "type": "integer", "minimum": 0, "maximum": 100, "description": "Overall fit for the role" },
+        "score":            { "type": "integer", "description": "Overall fit for the role, from 0 to 100" },
         "summary":          { "type": "string", "description": "Two or three sentences on overall fit" },
         "strengths":        { "type": "array", "items": { "type": "string" } },
         "gaps":             { "type": "array", "items": { "type": "string" }, "description": "Requirements the CV does not evidence" },
         "suggestedBullets": { "type": "array", "items": { "type": "string" }, "description": "CV bullet rewrites that use the JD's wording, only for experience the CV already shows" }
       },
-      "required": ["score", "summary", "strengths", "gaps", "suggestedBullets"]
+      "required": ["score", "summary", "strengths", "gaps", "suggestedBullets"],
+      "additionalProperties": false
     }
     """;
 

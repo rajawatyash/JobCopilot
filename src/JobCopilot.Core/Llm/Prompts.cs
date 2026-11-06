@@ -27,9 +27,8 @@ internal static class Prompts
         {closing}
         """;
 
-    public const string ToolInstruction = "Record your assessment with the tool.";
-
-    // Small local models follow the schema better when the prompt also asks for JSON.
+    // Both providers also receive the schema itself (Claude as output_config.format,
+    // Ollama as format), but naming the fields helps small local models comply.
     public const string JsonInstruction =
         "Reply with only a JSON object with the fields score, summary, strengths, gaps and suggestedBullets.";
 }

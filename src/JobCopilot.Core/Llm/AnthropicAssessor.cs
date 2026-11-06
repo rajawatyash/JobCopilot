@@ -7,12 +7,13 @@ namespace JobCopilot.Core.Llm;
 
 /// <summary>
 /// Calls the Claude Messages API directly over HttpClient, so every part of the
-/// request is visible. It forces a tool call, which makes the model return JSON
-/// that matches <see cref="AssessmentSchema"/> instead of free text.
+/// request is visible. Structured outputs (output_config.format) constrain the
+/// reply to <see cref="AssessmentSchema"/>, so it arrives as JSON instead of
+/// free text. This used to force a tool call instead, but current models reject
+/// tool_choice "tool" and "any" with a 400.
 /// </summary>
 public sealed class AnthropicAssessor(HttpClient http, IOptions<AnthropicOptions> options) : ILlmAssessor
 {
-    private const string ToolName = "record_assessment";
     private readonly AnthropicOptions _options = options.Value;
 
     public string Name => $"anthropic:{_options.Model}";
@@ -29,17 +30,18 @@ public sealed class AnthropicAssessor(HttpClient http, IOptions<AnthropicOptions
             ["model"] = _options.Model,
             ["max_tokens"] = _options.MaxTokens,
             ["system"] = Prompts.System,
-            ["tools"] = new JsonArray(new JsonObject
+            ["output_config"] = new JsonObject
             {
-                ["name"] = ToolName,
-                ["description"] = "Record the CV-to-job assessment.",
-                ["input_schema"] = JsonNode.Parse(AssessmentSchema.Json),
-            }),
-            ["tool_choice"] = new JsonObject { ["type"] = "tool", ["name"] = ToolName },
+                ["format"] = new JsonObject
+                {
+                    ["type"] = "json_schema",
+                    ["schema"] = JsonNode.Parse(AssessmentSchema.Json),
+                },
+            },
             ["messages"] = new JsonArray(new JsonObject
             {
                 ["role"] = "user",
-                ["content"] = Prompts.User(request, keywords, Prompts.ToolInstruction),
+                ["content"] = Prompts.User(request, keywords, Prompts.JsonInstruction),
             }),
         };
 
@@ -55,17 +57,38 @@ public sealed class AnthropicAssessor(HttpClient http, IOptions<AnthropicOptions
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException($"Claude API returned {(int)response.StatusCode}: {text}");
 
-        return ParseToolInput(text);
+        return ParseJsonOutput(text);
     }
 
-    internal static LlmAssessment ParseToolInput(string responseJson)
+    internal static LlmAssessment ParseJsonOutput(string responseJson)
     {
-        var root = JsonNode.Parse(responseJson)!;
-        var toolUse = root["content"]!.AsArray()
-            .FirstOrDefault(c => c?["type"]?.GetValue<string>() == "tool_use"
-                              && c["name"]?.GetValue<string>() == ToolName)
-            ?? throw new InvalidOperationException("Model did not return a tool_use block.");
+        var root = JsonNode.Parse(responseJson)
+            ?? throw new InvalidOperationException("Claude response was empty.");
 
-        return AssessmentSchema.Parse(toolUse["input"]);
+        // The schema only holds when the model ran to the end of its answer.
+        switch (root["stop_reason"]?.GetValue<string>())
+        {
+            case "refusal":
+                throw new InvalidOperationException("Claude declined to assess this CV and job description.");
+            case "max_tokens":
+                throw new InvalidOperationException("Assessment was cut off by max_tokens; raise Anthropic:MaxTokens.");
+        }
+
+        var json = root["content"]?.AsArray()
+            .FirstOrDefault(block => block?["type"]?.GetValue<string>() == "text")
+            ?["text"]?.GetValue<string>()
+            ?? throw new InvalidOperationException("Claude response had no text block.");
+
+        JsonNode? parsed;
+        try
+        {
+            parsed = JsonNode.Parse(json);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            throw new InvalidOperationException($"Model output was not valid JSON: {ex.Message}");
+        }
+
+        return AssessmentSchema.Parse(parsed);
     }
 }

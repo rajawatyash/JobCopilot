@@ -1,0 +1,52 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Local model, no API key needed. Requires `ollama serve` to be running.
+      "name": "API (Ollama)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/JobCopilot.Api/bin/Debug/net10.0/JobCopilot.Api.dll",
+      "args": ["--Llm:Provider=Ollama", "--Ollama:Model=llama3.2:latest"],
+      // The app resolves appsettings and user-secrets relative to this.
+      "cwd": "${workspaceFolder}/src/JobCopilot.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/openapi/v1.json"
+      }
+    },
+    {
+      // Claude. Needs: dotnet user-secrets set "Anthropic:ApiKey" "<key>"
+      "name": "API (Claude)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/JobCopilot.Api/bin/Debug/net10.0/JobCopilot.Api.dll",
+      "cwd": "${workspaceFolder}/src/JobCopilot.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/openapi/v1.json"
+      }
+    },
+    {
+      // Attach to an API already running from a terminal (pick the
+      // JobCopilot.Api process from the list).
+      "name": "Attach to running API",
+      "type": "coreclr",
+      "request": "attach"
+    }
+  ]
+}

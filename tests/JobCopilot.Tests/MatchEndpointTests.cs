@@ -54,11 +54,28 @@ public class MatchEndpointTests(WebApplicationFactory<Program> factory) : IClass
 
     private sealed class FakeLlm(int score, bool fail = false) : ILlmAssessor
     {
+        public string Name => "fake";
         public bool IsConfigured => true;
 
         public Task<LlmAssessment> AssessAsync(MatchRequest request, KeywordAnalysis keywords, CancellationToken ct) =>
             fail
                 ? throw new HttpRequestException("boom")
                 : Task.FromResult(new LlmAssessment(score, "ok", [], [], []));
+    }
+}
+
+public class ProviderSwitchTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+{
+    [Theory]
+    [InlineData("Ollama", typeof(OllamaAssessor))]
+    [InlineData("Anthropic", typeof(AnthropicAssessor))]
+    public void Config_selects_the_provider(string provider, Type expected)
+    {
+        using var app = factory.WithWebHostBuilder(b => b.UseSetting("Llm:Provider", provider));
+        using var scope = app.Services.CreateScope();
+
+        var assessor = scope.ServiceProvider.GetRequiredService<ILlmAssessor>();
+
+        Assert.IsType(expected, assessor);
     }
 }

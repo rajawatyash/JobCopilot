@@ -11,7 +11,7 @@ internal static class Prompts
         Be honest about gaps: a missing must-have lowers the score a lot, a missing nice-to-have a little.
         """;
 
-    public static string User(MatchRequest request, KeywordAnalysis keywords) => $"""
+    public static string User(MatchRequest request, KeywordAnalysis keywords, string closing) => $"""
         <job_description>
         {request.JobDescription}
         </job_description>
@@ -24,6 +24,12 @@ internal static class Prompts
         And these JD skills missing from the CV: {string.Join(", ", keywords.Missing)}.
         The scan is crude, so use it as a hint only.
 
-        Record your assessment with the tool.
+        {closing}
         """;
+
+    public const string ToolInstruction = "Record your assessment with the tool.";
+
+    // Small local models follow the schema better when the prompt also asks for JSON.
+    public const string JsonInstruction =
+        "Reply with only a JSON object with the fields score, summary, strengths, gaps and suggestedBullets.";
 }

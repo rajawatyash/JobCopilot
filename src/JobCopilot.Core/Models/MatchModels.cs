@@ -20,4 +20,5 @@ public sealed record MatchResult(
     int OverallScore,
     KeywordAnalysis Keywords,
     LlmAssessment? Ai,
+    string? AiModel,
     string? AiError);

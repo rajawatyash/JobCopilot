@@ -11,3 +11,20 @@ Content-Type: application/json
   "cvText": "Senior Software Engineer, 12 years. .NET 8, C#, Azure Functions, Azure Service Bus, SQL Server, Docker, GitHub Actions, OAuth2/JWT.",
   "jobDescription": "We need a Senior .NET engineer with C#, Azure, Kubernetes, Kafka and PostgreSQL. React is a plus."
 }
+
+###
+
+# Streams back text/event-stream: "delta" frames while the letter is written,
+# then one "done" frame with the score and the models used.
+# tone is one of Professional, Direct, Warm, Enthusiastic.
+POST {{host}}/api/cover-letter
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "cvText": "Senior Software Engineer, 12 years. .NET 8, C#, Azure Functions, Azure Service Bus, SQL Server, Docker, GitHub Actions, OAuth2/JWT.",
+  "jobDescription": "We need a Senior .NET engineer with C#, Azure, Kubernetes, Kafka and PostgreSQL. React is a plus.",
+  "tone": "Direct",
+  "companyName": "Northwind Logistics",
+  "roleTitle": "Senior Backend Engineer"
+}

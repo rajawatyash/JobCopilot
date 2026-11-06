@@ -66,53 +66,52 @@ Response:
 
 ```json
 {
-    "overallScore":  23,
-    "keywords":  {
-                     "coveragePercent":  31,
-                     "matched":  [
-                                     ".NET",
-                                     "C#",
-                                     "CI/CD",
-                                     "Docker"
-                                 ],
-                     "missing":  [
-                                     "Event-driven",
-                                     "Kafka",
-                                     "Kubernetes",
-                                     "Microservices",
-                                     "Observability",
-                                     "PostgreSQL",
-                                     "React",
-                                     "Redis",
-                                     "Terraform"
-                                 ]
-                 },
-    "ai":  {
-               "score":  20,
-               "summary":  "CV does not match the job description, with significant gaps in required skills and experience.",
-               "strengths":  [
-                                 "Mentions .NET and C# experience",
-                                 "Shows leadership experience with team management",
-                                 "Lists relevant technologies such as Docker and GitHub Actions"
-                             ],
-               "gaps":  [
-                            "Missing .NET 8 experience",
-                            "No mention of event-driven architecture or microservices",
-                            "No experience with Kubernetes, Kafka, or observability tools",
-                            "No mention of PostgreSQL or Redis",
-                            "No experience with React, Terraform, or financial services background"
-                        ],
-               "suggestedBullets":  [
-                                        "Designed and built microservices in C# and .NET 8, serving 2M requests a day",
-                                        "Implemented event-driven architecture using Azure Functions and Azure Service Bus",
-                                        "Managed CI/CD pipelines using GitHub Actions, reducing processing time by 90%",
-                                        "Utilized Docker to containerize services and improve scalability",
-                                        "Collaborated with team to design and implement observability using OpenTelemetry and Grafana"
-                                    ]
-           },
-    "aiModel":  "ollama:llama3.2:latest"
+  "overallScore": 23,
+  "keywords": {
+    "coveragePercent": 31,
+    "matched": [
+      ".NET",
+      "C#",
+      "CI/CD",
+      "Docker"
+    ],
+    "missing": [
+      "Event-driven",
+      "Kafka",
+      "Kubernetes",
+      "Microservices",
+      "Observability",
+      "PostgreSQL",
+      "React",
+      "Redis",
+      "Terraform"
+    ]
+  },
+  "ai": {
+    "score": 20,
+    "summary": "CV does not match the job description, with significant gaps in required skills and experience.",
+    "strengths": [
+      "Mentions .NET and C# experience",
+      "Shows leadership experience with team management",
+      "Lists relevant technologies such as Docker and GitHub Actions"
+    ],
+    "gaps": [
+      "Missing .NET 8 experience",
+      "No mention of event-driven architecture or microservices",
+      "No experience with Kubernetes, Kafka, or observability tools",
+      "No mention of PostgreSQL or Redis",
+      "No experience with React, Terraform, or financial services background"
+    ],
+    "suggestedBullets": [
+      "Designed and built microservices in C# and .NET 8, serving 2M requests a day",
+      "Implemented event-driven architecture using Azure Functions and Azure Service Bus",
+      "Managed CI/CD pipelines using GitHub Actions, reducing processing time by 90%",
+      "Utilized Docker to containerize services and improve scalability",
+      "Collaborated with team to design and implement observability using OpenTelemetry and Grafana"
+    ]
+  },
+  "aiModel": "ollama:llama3.2:latest"
 }
-
 ```
 
 ## Run it
@@ -165,7 +164,7 @@ tests/JobCopilot.Tests  xUnit: matcher unit tests, response and stream parsing,
 
 GitHub Actions CI (build + test on every push) runs from `.github/workflows/ci.yml`. The whole suite runs offline, so CI needs no API key.
 
-## What I learned / talking points
+## Design decisions and lessons learned
 
 - Why to constrain output with a schema instead of asking for "JSON please", how to validate and clamp what comes back, and what to do when a provider retires the mechanism you built on (forced tool use → structured outputs).
 - Why a deterministic check runs before the LLM (cost, latency, explainability, a fallback).

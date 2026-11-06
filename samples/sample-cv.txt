@@ -1,0 +1,22 @@
+Alex Morgan - Senior Software Engineer
+(Fictional sample CV for demonstrating JobCopilot. Not a real person.)
+
+SUMMARY
+Senior .NET engineer with 10 years building backend services for payments and logistics.
+Leads a team of 4, owns design reviews and mentors juniors.
+
+EXPERIENCE
+Senior Software Engineer, Northwind Logistics (2020 - present)
+- Built order-tracking APIs in C# and ASP.NET Core on .NET 8, serving 2M requests a day.
+- Moved nightly batch jobs to Azure Functions and Azure Service Bus, cutting processing time from 6 hours to 40 minutes.
+- Introduced GitHub Actions pipelines with automated tests, taking releases from monthly to weekly.
+- Designed SQL Server schemas and tuned slow queries, reducing p95 latency by 35%.
+
+Software Engineer, Contoso Payments (2015 - 2020)
+- Developed payment reconciliation services in C# and Entity Framework.
+- Added OAuth2 / JWT authentication to internal APIs.
+- Containerised services with Docker.
+
+SKILLS
+C#, .NET 8, ASP.NET Core, Entity Framework, SQL Server, Azure Functions, Azure Service Bus,
+Docker, GitHub Actions, OAuth2, JWT, xUnit, REST APIs

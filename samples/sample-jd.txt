@@ -1,0 +1,21 @@
+Lead .NET Engineer
+(Sample job description, anonymised, for demonstrating JobCopilot.)
+
+About the role
+We are looking for a Lead .NET Engineer to lead a team of 5 engineers building our
+event-driven trading platform.
+
+What you'll do
+- Design and build microservices in C# and .NET 8 running on Kubernetes (AKS).
+- Own our event streaming with Apache Kafka.
+- Work with PostgreSQL and Redis for data and caching.
+- Set technical direction, run design reviews and mentor engineers.
+- Improve our CI/CD pipelines and observability (OpenTelemetry, Grafana).
+
+What we're looking for
+- 8+ years of commercial C# / .NET experience.
+- Strong experience with microservices and event-driven architecture.
+- Hands-on Kubernetes and Docker.
+- Kafka or a similar message broker.
+- Experience leading or mentoring a team.
+- Nice to have: React, Terraform, financial services background.

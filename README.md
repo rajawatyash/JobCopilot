@@ -1,5 +1,8 @@
 # JobCopilot
 
+[![CI](https://github.com/rajawatyash/JobCopilot/actions/workflows/ci.yml/badge.svg)](https://github.com/rajawatyash/JobCopilot/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 An AI assistant for job hunting. Paste a job description and your CV, and it tells you how well they match, what's missing, and how to reword your CV bullets in the JD's language, without inventing experience. Then it drafts a cover letter from the same evidence, streamed as it is written.
 
 Built with .NET 10 and ASP.NET Core minimal APIs. The AI part runs on either a frontier model (Claude API) or a local model (Ollama), switched by config.
@@ -45,6 +48,72 @@ POST /api/cover-letter
 - **The letter is grounded in the match, not just the CV.** `/api/cover-letter` runs the match first and feeds the result into the letter prompt: lead with these strengths, do not claim these gaps. That is also why the match runs server-side instead of being posted in by the client — a score the caller supplies is a score the caller can invent.
 - **Streaming, and where errors can still go.** Validation and the grounding pass both finish *before* the first byte, because that is the last moment a failure can still be an HTTP status code (400 for bad input, 503 when no provider is configured). After the first frame the response is a 200 for good, so a provider that dies mid-letter is reported as an `event: error` frame instead. Two providers stream differently — Claude sends SSE, Ollama sends newline-delimited JSON — and both are normalised to one `IAsyncEnumerable<string>` behind `ILlmWriter`, so the browser only ever sees SSE.
 - **Tone is an enum, not a string.** `Professional`, `Direct`, `Warm`, `Enthusiastic`. The tone is interpolated straight into the prompt, so free text there would hand the caller a pen. An unknown name is a 400.
+
+## Example
+
+Real output from one run, using the fictional CV and anonymised JD in [`samples/`](samples/). To reproduce it, start the API and run `./samples/run-sample.ps1`.
+
+Request (abridged):
+
+```json
+{
+  "cvText": "Alex Morgan - Senior Software Engineer ... C#, .NET 8, ASP.NET Core, Azure Functions, Azure Service Bus, SQL Server, Docker, GitHub Actions ...",
+  "jobDescription": "Lead .NET Engineer ... C# and .NET 8 on Kubernetes (AKS) ... Apache Kafka ... PostgreSQL and Redis ... lead a team of 5 ..."
+}
+```
+
+Response:
+
+```json
+{
+    "overallScore":  23,
+    "keywords":  {
+                     "coveragePercent":  31,
+                     "matched":  [
+                                     ".NET",
+                                     "C#",
+                                     "CI/CD",
+                                     "Docker"
+                                 ],
+                     "missing":  [
+                                     "Event-driven",
+                                     "Kafka",
+                                     "Kubernetes",
+                                     "Microservices",
+                                     "Observability",
+                                     "PostgreSQL",
+                                     "React",
+                                     "Redis",
+                                     "Terraform"
+                                 ]
+                 },
+    "ai":  {
+               "score":  20,
+               "summary":  "CV does not match the job description, with significant gaps in required skills and experience.",
+               "strengths":  [
+                                 "Mentions .NET and C# experience",
+                                 "Shows leadership experience with team management",
+                                 "Lists relevant technologies such as Docker and GitHub Actions"
+                             ],
+               "gaps":  [
+                            "Missing .NET 8 experience",
+                            "No mention of event-driven architecture or microservices",
+                            "No experience with Kubernetes, Kafka, or observability tools",
+                            "No mention of PostgreSQL or Redis",
+                            "No experience with React, Terraform, or financial services background"
+                        ],
+               "suggestedBullets":  [
+                                        "Designed and built microservices in C# and .NET 8, serving 2M requests a day",
+                                        "Implemented event-driven architecture using Azure Functions and Azure Service Bus",
+                                        "Managed CI/CD pipelines using GitHub Actions, reducing processing time by 90%",
+                                        "Utilized Docker to containerize services and improve scalability",
+                                        "Collaborated with team to design and implement observability using OpenTelemetry and Grafana"
+                                    ]
+           },
+    "aiModel":  "ollama:llama3.2:latest"
+}
+
+```
 
 ## Run it
 
@@ -105,3 +174,7 @@ GitHub Actions CI (build + test on every push) runs from `.github/workflows/ci.y
 - SSE vs WebSockets vs long polling, and why a one-way token stream wants SSE: it is plain HTTP, it reconnects on its own, and it needs no second protocol.
 - Why error handling changes shape once you stream. The status code is spent on the first byte, so anything that can fail with a code has to fail before then, and everything after it needs an in-band channel. `yield return` is also illegal inside a `try` with a `catch`, so `CoverLetterStream` drives the enumerator by hand to catch a mid-stream failure.
 - Cost and latency control: `output_config.effort` is set to `low` for the letter, since drafting from gathered material is not a reasoning task, while the assessment call is where thinking earns its tokens. The writers also run with no `HttpClient.Timeout`, because that timeout covers the whole response — which for a stream is the whole letter — so cancellation does that job instead.
+
+## License
+
+[MIT](LICENSE)

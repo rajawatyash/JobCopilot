@@ -26,7 +26,7 @@ public sealed class OllamaAssessor(HttpClient http, IOptions<OllamaOptions> opti
             ["model"] = _options.Model,
             ["stream"] = false,
             ["format"] = JsonNode.Parse(AssessmentSchema.Json),
-            ["options"] = new JsonObject { ["temperature"] = 0 },
+            ["options"] = new JsonObject { ["temperature"] = 0, ["num_ctx"] = _options.ContextLength },
             ["messages"] = new JsonArray(
                 new JsonObject { ["role"] = "system", ["content"] = Prompts.System },
                 new JsonObject { ["role"] = "user", ["content"] = Prompts.User(request, keywords, Prompts.JsonInstruction) }),

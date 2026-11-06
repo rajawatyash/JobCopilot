@@ -49,7 +49,7 @@ cd src/JobCopilot.Api
 dotnet run --Llm:Provider=Ollama --Ollama:Model=qwen2.5:7b
 ```
 
-You don't need an API key. You can also set `"Llm": { "Provider": "Ollama" }` in `appsettings.Development.json`. 7–8B models work, but the score and gap quality is noticeably weaker than a frontier model, which is worth measuring in the eval slice.
+You don't need an API key. The app sends `num_ctx` (`Ollama:ContextLength`, 8192 by default), because Ollama's default context window is small and silently drops the start of long prompts. You can also set `"Llm": { "Provider": "Ollama" }` in `appsettings.Development.json`. 7–8B models work, but the score and gap quality is noticeably weaker than a frontier model, which is worth measuring in the eval slice.
 
 Then send the requests in `src/JobCopilot.Api/JobCopilot.Api.http` from VS Code (REST Client) or Visual Studio. The OpenAPI document is at `/openapi/v1.json` in Development.
 

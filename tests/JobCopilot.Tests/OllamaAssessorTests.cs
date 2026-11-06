@@ -48,6 +48,7 @@ public class OllamaAssessorTests
         Assert.Contains("\"stream\":false", handler.Body);
         Assert.Contains("\"format\":{\"type\":\"object\"", handler.Body);
         Assert.Contains("\"model\":\"llama3.1:8b\"", handler.Body);
+        Assert.Contains("\"num_ctx\":8192", handler.Body);
         Assert.Equal("ollama:llama3.1:8b", sut.Name);
     }
 
